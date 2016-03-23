@@ -46,14 +46,17 @@ module.exports = function() {
         // Go through each source file and replace terms
         getFilesToBeRenamed(this.files).forEach(replaceInFile);
 
-        function replaceInFile(filepath) {
-            var markup = grunt.file.read(filepath);
+        function replaceInFile(files) {
+            var src = files.src;
+            var dest = files.dest;
+
+            var markup = grunt.file.read(src);
 
             _.each(assetMap, function(hashed, original) {
                 markup = markup.split(original).join(hashed);
             });
 
-            grunt.file.write(filepath, markup);
+            grunt.file.write(dest || src, markup);
         }
 
         function hashFile(obj, file) {
@@ -95,12 +98,14 @@ module.exports = function() {
 
         function getFilesToBeRenamed(files) {
             var originalConfig = files[0].orig;
+            var dest = originalConfig.dest;
 
             return grunt.file
                 .expand(originalConfig, originalConfig.src)
                 .map(function (file) {
                     grunt.log.ok('Busted:', file);
-                    return path.resolve((originalConfig.cwd ? originalConfig.cwd + path.sep : '') + file);
+                    var src = path.resolve((originalConfig.cwd ? originalConfig.cwd + path.sep : '') + file);
+                    return {src: src, dest: dest};
                 });
         }
 
